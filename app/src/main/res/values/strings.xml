@@ -1,0 +1,103 @@
+<resources>
+    <string name="app_name">U-Map</string>
+
+    <string name="google_api_key">AIzaSyAp4OsBmhoLyi2ToWxOk1KP-AJ6huG7x9Y</string>
+
+    <string-array name="areas">
+        <item>IA</item>
+        <item>CN</item>
+        <item>NE</item>
+        <item>CS</item>
+        <item>SL</item>
+        <item>HU</item>
+        <item>AG</item>
+        <item>AU</item>
+        <item>CE</item>
+        <item>CAL</item>
+        <item>HA</item>
+        <item>CC</item>
+        <item>CL</item>
+        <item>CB</item>
+        <item>CG</item>
+        <item>J1</item>
+        <item>J2</item>
+        <item>J3</item>
+        <item>J4</item>
+        <item>J5</item>
+        <item>J6</item>
+        <item>A</item>
+        <item>CFR</item>
+        <item>CT</item>
+        <item>GA</item>
+        <item>GB</item>
+        <item>GC</item>
+        <item>ATL</item>
+    </string-array>
+
+    <string-array name="areasdescription">
+        <item>Ingenierias</item>
+        <item>Ciencias</item>
+        <item>Negocios</item>
+        <item>Ciencias Sociales</item>
+        <item>Ciencias de la Salud</item>
+        <item>Humanidades</item>
+        <item>Aagora</item>
+        <item>Auditorio</item>
+        <item>Centro Estudiantil</item>
+        <item>Centro de Aprendizaje de Lenguas</item>
+        <item>Hacienda</item>
+        <item>Colegio Caín Murray</item>
+        <item>Colegio Ray Lindley</item>
+        <item>Colegio Ignacio Bernal</item>
+        <item>Colegio Jose Gaos</item>
+        <item>Plaza Banderas</item>
+        <item>Jardin de la Hacienda</item>
+        <item>Jardín de la Meditacion</item>
+        <item>Jardin Franciscano</item>
+        <item>Lago</item>
+        <item>Humedal</item>
+        <item>Alberca</item>
+        <item>Campo de Futbol Rapido</item>
+        <item>Cancha de Tennis</item>
+        <item>Gimnasio Moe Williams</item>
+        <item>Gimnasio Pesas</item>
+        <item>Gimnasio Comunidad</item>
+        <item>Pista de Atletismo</item>
+    </string-array>
+
+    <string-array name="classrooms">
+        <item>101</item>
+        <item>102</item>
+        <item>103</item>
+        <item>104</item>
+        <item>105</item>
+        <item>106</item>
+        <item>107</item>
+        <item>108</item>
+        <item>109</item>
+        <item>110</item>
+        <item>111</item>
+        <item>112</item>
+        <item>113</item>
+        <item>114</item>
+        <item>115</item>
+        <item>116</item>
+        <item>201</item>
+        <item>202</item>
+        <item>203</item>
+        <item>204</item>
+        <item>205</item>
+        <item>206</item>
+        <item>207</item>
+        <item>208</item>
+        <item>209</item>
+        <item>210</item>
+        <item>211</item>
+        <item>212</item>
+        <item>213</item>
+        <item>214</item>
+        <item>215</item>
+        <item>216</item>
+    </string-array>
+    <string name="title_activity_maps">Map</string>
+</resources>
