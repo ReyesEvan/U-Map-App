@@ -47,7 +47,7 @@ public class RoomSelector extends AppCompatActivity {
         roomGridView = (GridView) findViewById(R.id.roomGridView);
         classrooms = resources.getStringArray(R.array.classrooms);
 
-        Intent in = getIntent();
+        final Intent in = getIntent();
 
         TextView area = (TextView) findViewById(R.id.areaTextView);
         area.setText(in.getStringExtra("com.example.charles.u_map.AREA"));
@@ -62,6 +62,8 @@ public class RoomSelector extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent goToMap = new Intent(getApplicationContext(), MapsActivity.class);
                 goToMap.putExtra("com.example.charles.u_map.LOCATION_PERMISSION",locationPermision);
+                goToMap.putExtra("com.example.charles.u_map.AREA",in.getStringExtra("com.example.charles.u_map.AREA"));
+                goToMap.putExtra("com.example.charles.u_map.CLASSROOM", classrooms[position]);
                 startActivity(goToMap);
             }
         });

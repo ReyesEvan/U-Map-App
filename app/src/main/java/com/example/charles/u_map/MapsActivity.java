@@ -34,7 +34,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Intent in;
     private Handler handler;
     private Runnable runnable;
-    
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
