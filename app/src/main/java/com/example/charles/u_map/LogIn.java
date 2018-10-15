@@ -23,6 +23,8 @@ public class LogIn extends AppCompatActivity {
     private EditText passwordInput;
     private Button signIn;
 
+    String area = "IA";
+    String room = "101";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,15 +52,6 @@ public class LogIn extends AppCompatActivity {
         if (id.contentEquals("155713") && password.contentEquals("admin")) {
             Intent goToAreaSelector = new Intent(getApplicationContext(), MainActivity.class);
             startActivity(goToAreaSelector);
-        }
-
-        DataBase db = new DataBase();
-        try {
-            result = db.makeQuery("SELECT * FROM Destinos WHERE CONVERT(VARCHAR, Edificio) = 'IA';");
-            db.closeConnection();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
     }
 }

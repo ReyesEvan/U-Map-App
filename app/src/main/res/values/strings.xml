@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">U-Map</string>
 
-    <string name="google_api_key">AIzaSyCWmS_xYBlo7daYILxf6DPAl9CMiyKThAw</string>
+    <string name="google_api_key">AIzaSyBHcdGKezx7YjTSaLxSppTocFD0G9jEN3g</string>
 
     <string-array name="areas">
         <item>IA</item>
