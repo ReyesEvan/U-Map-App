@@ -1,21 +1,37 @@
 package com.example.charles.u_map;
 
 import android.Manifest;
+import android.animation.ObjectAnimator;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.RotateAnimation;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.charles.u_map.utils.ViewWeightAnimationWrapper;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
@@ -39,13 +55,14 @@ import com.google.maps.PendingResult;
 import com.google.maps.internal.PolylineEncoding;
 import com.google.maps.model.DirectionsResult;
 import com.google.maps.model.DirectionsRoute;
+import static android.hardware.SensorManager.SENSOR_DELAY_FASTEST;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,GoogleMap.OnPolylineClickListener{
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,GoogleMap.OnPolylineClickListener, View.OnClickListener, SensorEventListener {
 
     private final float DEFAULT_ZOOM = 17.5f;
     private final int LOCATION_UPDATE_INTERVAL = 8000;
@@ -65,6 +82,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private String area;
     private String room;
 
+    ImageView iv;
+    TextView tv;
+
+    private static SensorManager sensorService;
+    private Sensor sensor;
+
+    private float currentDegree = 0f;
+
+
+
+    private static final int MAP_LAYOUT_STATE_CONTRACTED = 0;
+    private static final int MAP_LAYOUT_STATE_EXPANDED = 1;
+    private int mMapLayoutState = 0;
+    private RelativeLayout   mMapContainer;
+    private ConstraintLayout compassView;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,6 +115,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
         area = in.getStringExtra("com.example.charles.u_map.AREA");
         room = in.getStringExtra("com.example.charles.u_map.CLASSROOM");
+
+        iv = findViewById(R.id.arrow);
+        tv = findViewById(R.id.degrees);
+
+        sensorService = (SensorManager)  getSystemService(Context.SENSOR_SERVICE);
+        //sensor = sensorService.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+        sensor = sensorService.getDefaultSensor(Sensor.TYPE_ORIENTATION);
+
+
+        findViewById(R.id.btn_full_screen_map).setOnClickListener(this);
+
+        mMapContainer = findViewById(R.id.map_container);
+        compassView = findViewById(R.id.compass_container);
+
+
     }
 
 
@@ -288,6 +337,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onResume(){
         super.onResume();
         startUserRunnable();
+
+        if (sensor != null)
+            sensorService.registerListener(this, sensor, SensorManager.SENSOR_DELAY_FASTEST);
+        else
+            Toast.makeText(this, "Not supported!", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        sensorService.unregisterListener(this);
     }
 
     @Override
@@ -302,6 +363,135 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 polylineData.getPolyline().setColor(Color.DKGRAY);
                 polylineData.getPolyline().setZIndex(0);
             }
+        }
+    }
+
+
+    /* CUSTOM COMPASS LOGIC */
+
+    private static double getAzimuth(double phi1, double lambda1, double phi2, double lambda2) {
+        double azimuth;
+
+        double deltaPhi = Math.toRadians(phi2 - phi1);
+        double deltaLambda = Math.toRadians(lambda2 - lambda1);
+
+        double sinDeltaLambda = Math.sin(deltaLambda);
+        double cosDeltaLambda = Math.cos(deltaLambda);
+
+        double sinPhi1 = Math.sin(Math.toRadians(phi1));
+        double sinPhi2 = Math.sin(Math.toRadians(phi2));
+        double cosPhi1 = Math.cos(Math.toRadians(phi1));
+        double cosPhi2 = Math.cos(Math.toRadians(phi2));
+
+
+        double x = sinDeltaLambda * cosPhi2;
+        double y = cosPhi1 * sinPhi2 - sinPhi1 * cosPhi2 * cosDeltaLambda;
+
+        azimuth = Math.atan2(x, y);
+
+        System.out.println("Azimuth = " + Math.toDegrees(azimuth));
+        return Math.toDegrees(azimuth);
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        int degree = Math.round(event.values[0]);
+
+
+        System.out.println("Degree:: " + -degree + "/" + 0x00B0);
+        //double lat1 = 19.0198547;
+        //double lon1 = -98.2723742;
+        //double lat2 = 19.0187586;
+        //double lon2 = -98.2694623;
+        double lat1 = 19.053035;
+        double lon1 = -98.283367;
+        double lat2 = 19.053546;
+        double lon2 = -98.282711;
+        double azimuth = getAzimuth(lat1, lon1, lat2, lon2);
+
+
+        //int degreeAz = degree + (int) azimuth + 0x00B0;
+
+        int degreeAz;
+        if (degree - (int) azimuth > 0)
+            degreeAz = degree - (int) azimuth;
+        else
+            degreeAz = 360 + (degree - (int) azimuth);
+
+        tv.setText("" + degreeAz);
+        //tv.setText(Integer.toString(degree) + (char) 0x00B0);
+
+        //+ (char) 0x00B0
+        RotateAnimation ra = new RotateAnimation(currentDegree, -degreeAz, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        //RotateAnimation ra = new RotateAnimation(currentDegree, -degree, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+
+        ra.setDuration(1000);
+        ra.setFillAfter(true);
+
+        iv.startAnimation(ra);
+        //currentDegree = -degree;
+        currentDegree = -degreeAz;
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
+    /* END OF CUSTOM COMPASS LOGIC */
+
+    /* CONTRACT AND EXPAND MAP LOGIC */
+    private void expandMapAnimation(){
+        ViewWeightAnimationWrapper mapAnimationWrapper = new ViewWeightAnimationWrapper(mMapContainer);
+        ObjectAnimator mapAnimation = ObjectAnimator.ofFloat(mapAnimationWrapper,
+                "weight",
+                70,
+                100);
+        mapAnimation.setDuration(800);
+
+        ViewWeightAnimationWrapper recyclerAnimationWrapper = new ViewWeightAnimationWrapper(compassView);
+        ObjectAnimator recyclerAnimation = ObjectAnimator.ofFloat(recyclerAnimationWrapper,
+                "weight",
+                30,
+                0);
+        recyclerAnimation.setDuration(800);
+
+        recyclerAnimation.start();
+        mapAnimation.start();
+    }
+
+    private void contractMapAnimation(){
+        ViewWeightAnimationWrapper mapAnimationWrapper = new ViewWeightAnimationWrapper(mMapContainer);
+        ObjectAnimator mapAnimation = ObjectAnimator.ofFloat(mapAnimationWrapper,
+                "weight",
+                100,
+                70);
+        mapAnimation.setDuration(800);
+
+        ViewWeightAnimationWrapper recyclerAnimationWrapper = new ViewWeightAnimationWrapper(compassView);
+        ObjectAnimator recyclerAnimation = ObjectAnimator.ofFloat(recyclerAnimationWrapper,
+                "weight",
+                0,
+                30);
+        recyclerAnimation.setDuration(800);
+
+        recyclerAnimation.start();
+        mapAnimation.start();
+    }
+
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btn_full_screen_map: {
+
+                if (mMapLayoutState == MAP_LAYOUT_STATE_CONTRACTED) {
+                    mMapLayoutState = MAP_LAYOUT_STATE_EXPANDED;
+                    expandMapAnimation();
+                } else if (mMapLayoutState == MAP_LAYOUT_STATE_EXPANDED) {
+                    mMapLayoutState = MAP_LAYOUT_STATE_CONTRACTED;
+                    contractMapAnimation();
+                }
+                break;
+            }
+
         }
     }
 }
