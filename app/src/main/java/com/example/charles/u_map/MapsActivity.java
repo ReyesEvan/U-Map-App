@@ -61,6 +61,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,GoogleMap.OnPolylineClickListener, View.OnClickListener, SensorEventListener {
 
@@ -76,21 +77,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private GeoApiContext mGeoApiContext = null;
     private Location currentStudentLocation;
+    private LatLng targetLocation;
     private Marker roomMarker;
     private ArrayList<PolyLineData> mPolyLines= new ArrayList<>();
 
     private String area;
     private String room;
 
+    /* ----------- RESOURCES REQUIRED FOR SHOWING THE DIRECTIONAL VECTOR ------------ */
     ImageView iv;
-    TextView tv;
 
     private static SensorManager sensorService;
     private Sensor sensor;
 
-    private float currentDegree = 0f;
+    private float currentDegree = 0;
 
 
+    /* ------------ RESOURCES REQUIRED FOR EXPANDING - CONTRACTING ANIMATIONS FOR THIS VIEW --------- */
 
     private static final int MAP_LAYOUT_STATE_CONTRACTED = 0;
     private static final int MAP_LAYOUT_STATE_EXPANDED = 1;
@@ -103,6 +106,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -113,19 +117,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if(mGeoApiContext == null){
             mGeoApiContext = new GeoApiContext.Builder().apiKey(getString(R.string.google_api_key)).build();
         }
+
         area = in.getStringExtra("com.example.charles.u_map.AREA");
         room = in.getStringExtra("com.example.charles.u_map.CLASSROOM");
 
+        //getting the image that'll be rotated to show the direction
         iv = findViewById(R.id.arrow);
-        tv = findViewById(R.id.degrees);
+
 
         sensorService = (SensorManager)  getSystemService(Context.SENSOR_SERVICE);
-        //sensor = sensorService.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+
+        //getting the orientation sensor to detect the changes of the phone
         sensor = sensorService.getDefaultSensor(Sensor.TYPE_ORIENTATION);
 
-
+        //finding the button that'll be used for contracting/expanding the views
         findViewById(R.id.btn_full_screen_map).setOnClickListener(this);
 
+        //finding the both views used: map one and compass one
         mMapContainer = findViewById(R.id.map_container);
         compassView = findViewById(R.id.compass_container);
 
@@ -175,6 +183,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         position = new LatLng(result.getDouble("Latitud"), result.getDouble("Longitud"));
 
         roomMarker = mMap.addMarker(new MarkerOptions().position(position).title(area + " " + room).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+        targetLocation = position;
 
         db.closeConnection();
     }
@@ -369,10 +378,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     /* CUSTOM COMPASS LOGIC */
 
+    /**
+     * Calculate the azimuth between two geographic coordinates
+     * The Azimuth is calculated with the formula:
+     * AZIMUTH = ARCTAN2[(sin Δλ ⋅ cos φ₂), (cos φ₁ ⋅ sin φ₂ − sin φ₁ ⋅ cos φ₂ ⋅ cos Δλ)]
+     * @param phi1      - the initial latitude  [DEGREES]
+     * @param lambda1   - the initial longitude [DEGREES]
+     * @param phi2      - the final latitude    [DEGREES]
+     * @param lambda2   - the final longitude   [DEGREES]
+     * @return the azimuth [IN DEGREES] between the geographic coordinates (φ1, λ1) and (φ2, λ2)
+     */
     private static double getAzimuth(double phi1, double lambda1, double phi2, double lambda2) {
         double azimuth;
 
-        double deltaPhi = Math.toRadians(phi2 - phi1);
         double deltaLambda = Math.toRadians(lambda2 - lambda1);
 
         double sinDeltaLambda = Math.sin(deltaLambda);
@@ -389,47 +407,52 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         azimuth = Math.atan2(x, y);
 
-        System.out.println("Azimuth = " + Math.toDegrees(azimuth));
         return Math.toDegrees(azimuth);
     }
 
+    /**
+     * Every time the sensor changes, the current and target location and the azimuth between them are recalculated
+     * @param event
+     */
     @Override
     public void onSensorChanged(SensorEvent event) {
-        int degree = Math.round(event.values[0]);
-
 
         System.out.println("Degree:: " + -degree + "/" + 0x00B0);
-        //double lat1 = 19.0198547;
-        //double lon1 = -98.2723742;
-        //double lat2 = 19.0187586;
-        //double lon2 = -98.2694623;
-        double lat1 = 19.053035;
-        double lon1 = -98.283367;
-        double lat2 = 19.053546;
-        double lon2 = -98.282711;
+
+
+        //If some of the required locations isn't available, the method cannot be performed
+        if (currentStudentLocation == null || targetLocation == null)
+            return;
+
+        int degree = Math.round(event.values[0]);
+
+        double lat1 = currentStudentLocation.getLatitude();
+        double lon1 = currentStudentLocation.getLongitude();
+
+        double lat2 = targetLocation.latitude;
+        double lon2 = targetLocation.longitude;
+
         double azimuth = getAzimuth(lat1, lon1, lat2, lon2);
 
 
         //int degreeAz = degree + (int) azimuth + 0x00B0;
 
         int degreeAz;
+
         if (degree - (int) azimuth > 0)
             degreeAz = degree - (int) azimuth;
         else
             degreeAz = 360 + (degree - (int) azimuth);
 
-        tv.setText("" + degreeAz);
-        //tv.setText(Integer.toString(degree) + (char) 0x00B0);
 
-        //+ (char) 0x00B0
+
         RotateAnimation ra = new RotateAnimation(currentDegree, -degreeAz, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-        //RotateAnimation ra = new RotateAnimation(currentDegree, -degree, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
 
         ra.setDuration(1000);
         ra.setFillAfter(true);
 
         iv.startAnimation(ra);
-        //currentDegree = -degree;
+
         currentDegree = -degreeAz;
     }
 
@@ -438,6 +461,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
     /* END OF CUSTOM COMPASS LOGIC */
+
 
     /* CONTRACT AND EXPAND MAP LOGIC */
     private void expandMapAnimation(){

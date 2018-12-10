@@ -26,18 +26,22 @@ android:background="@color/colorPrimary">
             android:name="com.google.android.gms.maps.SupportMapFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
             tools:context=".MapsActivity" />
 
         <ImageButton
             android:id="@+id/btn_full_screen_map"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
             android:layout_alignParentEnd="true"
             android:layout_alignParentBottom="true"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="16dp"
-            android:background="@color/common_google_signin_btn_text_light_default"
+            android:adjustViewBounds="true"
+            android:background="@android:color/transparent"
+            android:cropToPadding="true"
             android:src="@drawable/compass_icon"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -45,58 +49,28 @@ android:background="@color/colorPrimary">
     </RelativeLayout>
 
     <android.support.constraint.ConstraintLayout
+        android:id="@+id/compass_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="30"
-        android:id="@+id/compass_container">
-
-        <ImageView
-            android:id="@+id/compass_rose"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
-
-
-            android:layout_marginStart="55dp"
-            android:layout_marginTop="29dp"
-            android:layout_marginEnd="55dp"
-            android:layout_marginBottom="43dp"
-            android:src="@drawable/compass_rose"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.372" />
+        android:background="@drawable/compass_rose">
 
         <ImageView
             android:id="@+id/arrow"
             android:layout_width="150dp"
-            android:layout_height="150dp"
+            android:layout_height="186dp"
 
 
             android:layout_marginStart="55dp"
-            android:layout_marginTop="29dp"
+            android:layout_marginTop="25dp"
             android:layout_marginEnd="55dp"
-            android:layout_marginBottom="43dp"
-            android:src="@drawable/arrow"
+            android:layout_marginBottom="25dp"
+            android:src="@drawable/arrow4"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.372" />
-
-        <TextView
-            android:id="@+id/degrees"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
-            android:text="TextView"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/compass_rose"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintVertical_bias="0.425" />
 
 
     </android.support.constraint.ConstraintLayout>
